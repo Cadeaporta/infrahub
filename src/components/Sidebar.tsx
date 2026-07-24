@@ -11,6 +11,7 @@ import {
   LogOut,
   ShieldCheck,
   CalendarClock,
+  Tv,
 } from "lucide-react";
 
 const NAV = [
@@ -62,6 +63,15 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      <Link
+        href="/tv"
+        target="_blank"
+        className="mx-3 mb-2 flex items-center gap-3 px-3 py-2 rounded-md text-sm text-text-dim hover:text-accent hover:bg-panel-2 transition-colors"
+      >
+        <Tv size={16} />
+        Modo TV
+      </Link>
 
       <button
         onClick={handleLogout}
