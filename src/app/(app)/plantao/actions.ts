@@ -19,15 +19,17 @@ export async function definirPlantonista(formData: FormData) {
 
 export async function definirEscala(formData: FormData) {
   const supabase = await createClient();
-  const diaSemana = formData.get("diaSemana") as string;
+  const semanaInicio = formData.get("semanaInicio") as string;
   const nome = (formData.get("nome") as string) || null;
   const entrada = Number(formData.get("entrada"));
   const saida = Number(formData.get("saida"));
 
   await supabase
     .from("escala_semana")
-    .update({ nome, entrada, saida, updated_at: new Date().toISOString() })
-    .eq("dia_semana", diaSemana);
+    .upsert(
+      { semana_inicio: semanaInicio, nome, entrada, saida, updated_at: new Date().toISOString() },
+      { onConflict: "semana_inicio" }
+    );
 
   revalidatePath("/plantao");
 }
