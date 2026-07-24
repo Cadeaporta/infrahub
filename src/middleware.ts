@@ -33,7 +33,8 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/dashboard") ||
     request.nextUrl.pathname.startsWith("/estoque") ||
     request.nextUrl.pathname.startsWith("/equipamentos") ||
-    request.nextUrl.pathname.startsWith("/avisos");
+    request.nextUrl.pathname.startsWith("/avisos") ||
+    request.nextUrl.pathname.startsWith("/admin");
 
   if (!user && isAppRoute) {
     const url = request.nextUrl.clone();

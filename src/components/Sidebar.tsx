@@ -9,6 +9,7 @@ import {
   Monitor,
   Megaphone,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 
 const NAV = [
@@ -16,6 +17,7 @@ const NAV = [
   { href: "/estoque", label: "Estoque", icon: Package },
   { href: "/equipamentos", label: "Equipamentos", icon: Monitor },
   { href: "/avisos", label: "Avisos", icon: Megaphone },
+  { href: "/admin", label: "Admin", icon: ShieldCheck },
 ];
 
 export default function Sidebar() {
