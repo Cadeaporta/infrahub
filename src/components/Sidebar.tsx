@@ -33,7 +33,7 @@ export default function Sidebar() {
     <aside className="w-56 shrink-0 border-r border-line bg-panel flex flex-col">
       <div className="px-5 py-5 border-b border-line">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-accent status-pulse" />
+          <span className="w-2 h-2 rounded-full brand-gradient status-pulse" />
           <span className="font-mono font-bold tracking-tight">InfraHub</span>
         </div>
         <p className="text-[11px] text-text-dim mt-0.5 font-mono">Vera Cruz · Braga IT</p>

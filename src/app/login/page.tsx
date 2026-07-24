@@ -49,12 +49,12 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-sm mx-4">
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-2 mb-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-accent status-pulse" />
+            <span className="w-2.5 h-2.5 rounded-full brand-gradient status-pulse" />
             <span className="font-mono text-xs tracking-[0.3em] text-text-dim uppercase">
               Vera Cruz · Braga IT
             </span>
           </div>
-          <h1 className="font-mono text-3xl font-bold tracking-tight">InfraHub</h1>
+          <h1 className="font-mono text-3xl font-bold tracking-tight brand-gradient-text">InfraHub</h1>
           <p className="text-text-dim text-sm mt-1">One place for everything IT.</p>
         </div>
 
