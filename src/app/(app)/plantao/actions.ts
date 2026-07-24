@@ -17,19 +17,27 @@ export async function definirPlantonista(formData: FormData) {
   revalidatePath("/plantao");
 }
 
-export async function definirEscala(formData: FormData) {
+export async function adicionarMembroEscala(formData: FormData) {
   const supabase = await createClient();
-  const semanaInicio = formData.get("semanaInicio") as string;
-  const nome = (formData.get("nome") as string) || null;
+  const nome = (formData.get("nome") as string).trim();
   const entrada = Number(formData.get("entrada"));
-  const saida = Number(formData.get("saida"));
+  if (!nome) return;
+  await supabase.from("escala_equipe").insert({ nome, entrada });
+  revalidatePath("/plantao");
+}
 
-  await supabase
-    .from("escala_semana")
-    .upsert(
-      { semana_inicio: semanaInicio, nome, entrada, saida, updated_at: new Date().toISOString() },
-      { onConflict: "semana_inicio" }
-    );
+export async function editarMembroEscala(formData: FormData) {
+  const supabase = await createClient();
+  const id = formData.get("id") as string;
+  const nome = (formData.get("nome") as string).trim();
+  const entrada = Number(formData.get("entrada"));
+  await supabase.from("escala_equipe").update({ nome, entrada }).eq("id", id);
+  revalidatePath("/plantao");
+}
 
+export async function removerMembroEscala(formData: FormData) {
+  const supabase = await createClient();
+  const id = formData.get("id") as string;
+  await supabase.from("escala_equipe").delete().eq("id", id);
   revalidatePath("/plantao");
 }
