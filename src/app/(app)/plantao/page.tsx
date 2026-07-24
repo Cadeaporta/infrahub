@@ -55,7 +55,7 @@ export default async function PlantaoPage({
               <form
                 key={m.id}
                 action={editarMembroEscala}
-                className="grid grid-cols-[1fr_110px_auto_auto] gap-2 items-center"
+                className="group grid grid-cols-[1fr_110px_auto_auto] gap-2 items-center"
               >
                 <input type="hidden" name="id" value={m.id} />
                 <input
@@ -74,12 +74,12 @@ export default async function PlantaoPage({
                     </option>
                   ))}
                 </select>
-                <button className="text-xs font-mono px-2 py-1.5 rounded border border-line hover:border-accent hover:text-accent">
+                <button className="text-xs font-mono px-2 py-1.5 rounded border border-line hover:border-accent hover:text-accent opacity-0 group-hover:opacity-100 transition-opacity">
                   Salvar
                 </button>
                 <button
                   formAction={removerMembroEscala}
-                  className="text-xs font-mono px-2 py-1.5 rounded border border-line hover:border-danger hover:text-danger"
+                  className="text-xs font-mono px-2 py-1.5 rounded border border-line hover:border-danger hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   Remover
                 </button>
