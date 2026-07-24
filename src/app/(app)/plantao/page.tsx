@@ -54,70 +54,58 @@ export default async function PlantaoPage({
           <h2 className="font-mono text-xs text-text-dim uppercase tracking-wider mb-3">
             Escala da semana (horário comercial)
           </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-text-dim border-b border-line font-mono text-xs uppercase">
-                  <th className="py-2 pr-4">Dia</th>
-                  <th className="py-2 pr-4">Nome</th>
-                  <th className="py-2 pr-4">Entrada</th>
-                  <th className="py-2 pr-4">Saída</th>
-                  <th className="py-2 pr-4"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {ESCALA_ORDEM.map(({ key, label }) => {
-                  const e = escalaMap.get(key);
-                  return (
-                    <tr key={key} className="border-b border-line last:border-0">
-                      <td className="py-2 pr-4 font-mono text-text-dim">{label}</td>
-                      <form action={definirEscala} className="contents">
-                        <input type="hidden" name="diaSemana" value={key} />
-                        <td className="py-2 pr-4">
-                          <input
-                            name="nome"
-                            defaultValue={e?.nome ?? ""}
-                            placeholder="—"
-                            className="bg-bg border border-line rounded px-2 py-1 text-sm w-32"
-                          />
-                        </td>
-                        <td className="py-2 pr-4">
-                          <select
-                            name="entrada"
-                            defaultValue={e?.entrada ?? 8}
-                            className="bg-bg border border-line rounded px-2 py-1 text-sm"
-                          >
-                            {[7, 8, 9, 10].map((h) => (
-                              <option key={h} value={h}>
-                                {h}:00
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="py-2 pr-4">
-                          <select
-                            name="saida"
-                            defaultValue={e?.saida ?? 17}
-                            className="bg-bg border border-line rounded px-2 py-1 text-sm"
-                          >
-                            {[16, 17, 18, 19].map((h) => (
-                              <option key={h} value={h}>
-                                {h}:00
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="py-2 pr-4">
-                          <button className="text-xs font-mono px-2 py-1 rounded border border-line hover:border-accent hover:text-accent">
-                            Salvar
-                          </button>
-                        </td>
-                      </form>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="space-y-2">
+            <div className="hidden sm:grid grid-cols-[100px_1fr_120px_120px_90px] gap-3 text-xs text-text-dim font-mono uppercase pb-2 border-b border-line">
+              <span>Dia</span>
+              <span>Nome</span>
+              <span>Entrada</span>
+              <span>Saída</span>
+              <span></span>
+            </div>
+            {ESCALA_ORDEM.map(({ key, label }) => {
+              const e = escalaMap.get(key);
+              return (
+                <form
+                  key={key}
+                  action={definirEscala}
+                  className="grid grid-cols-2 sm:grid-cols-[100px_1fr_120px_120px_90px] gap-3 items-center py-2 border-b border-line last:border-0"
+                >
+                  <input type="hidden" name="diaSemana" value={key} />
+                  <span className="font-mono text-text-dim text-sm">{label}</span>
+                  <input
+                    name="nome"
+                    defaultValue={e?.nome ?? ""}
+                    placeholder="—"
+                    className="bg-bg border border-line rounded px-2 py-1 text-sm w-full"
+                  />
+                  <select
+                    name="entrada"
+                    defaultValue={e?.entrada ?? 8}
+                    className="bg-bg border border-line rounded px-2 py-1 text-sm"
+                  >
+                    {[7, 8, 9, 10].map((h) => (
+                      <option key={h} value={h}>
+                        {h}:00
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    name="saida"
+                    defaultValue={e?.saida ?? 17}
+                    className="bg-bg border border-line rounded px-2 py-1 text-sm"
+                  >
+                    {[16, 17, 18, 19].map((h) => (
+                      <option key={h} value={h}>
+                        {h}:00
+                      </option>
+                    ))}
+                  </select>
+                  <button className="text-xs font-mono px-2 py-1 rounded border border-line hover:border-accent hover:text-accent">
+                    Salvar
+                  </button>
+                </form>
+              );
+            })}
           </div>
         </section>
 
