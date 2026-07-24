@@ -3,6 +3,35 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
+export async function criarItem(formData: FormData) {
+  const supabase = await createClient();
+  const nome = formData.get("nome") as string;
+  const categoriaId = (formData.get("categoriaId") as string) || null;
+  const quantidade = Number(formData.get("quantidade"));
+  const minimo = Number(formData.get("minimo"));
+
+  await supabase.from("estoque").insert({
+    nome,
+    categoria_id: categoriaId,
+    quantidade,
+    minimo,
+  });
+
+  revalidatePath("/estoque");
+  revalidatePath("/dashboard");
+}
+
+export async function editarMinimo(formData: FormData) {
+  const supabase = await createClient();
+  const itemId = formData.get("itemId") as string;
+  const minimo = Number(formData.get("minimo"));
+
+  await supabase.from("estoque").update({ minimo }).eq("id", itemId);
+
+  revalidatePath("/estoque");
+  revalidatePath("/dashboard");
+}
+
 export async function movimentarItem(formData: FormData) {
   const supabase = await createClient();
   const {

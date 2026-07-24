@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import TopBar from "@/components/TopBar";
+import { criarEquipamento } from "./actions";
 
 export default async function EquipamentosPage() {
   const supabase = await createClient();
@@ -11,12 +12,33 @@ export default async function EquipamentosPage() {
   return (
     <>
       <TopBar title="Equipamentos" />
-      <main className="flex-1 p-6 overflow-y-auto">
+      <main className="flex-1 p-6 space-y-6 overflow-y-auto">
+        <details className="bg-panel-2 border border-line rounded-lg p-4">
+          <summary className="font-mono text-xs text-text-dim uppercase tracking-wider cursor-pointer select-none">
+            + Novo equipamento
+          </summary>
+          <form action={criarEquipamento} className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+            <input name="nome" required placeholder="Nome (ex: PC-AMB-014)" className="bg-bg border border-line rounded px-3 py-2 text-sm" />
+            <input name="patrimonio" placeholder="Patrimônio" className="bg-bg border border-line rounded px-3 py-2 text-sm" />
+            <input name="usuario" placeholder="Usuário" className="bg-bg border border-line rounded px-3 py-2 text-sm" />
+            <input name="ip" placeholder="IP" className="bg-bg border border-line rounded px-3 py-2 text-sm" />
+            <input name="mac" placeholder="MAC" className="bg-bg border border-line rounded px-3 py-2 text-sm" />
+            <input name="sistema" placeholder="Sistema (ex: Windows 11)" className="bg-bg border border-line rounded px-3 py-2 text-sm" />
+            <select name="status" defaultValue="ativo" className="bg-bg border border-line rounded px-3 py-2 text-sm text-text-dim">
+              <option value="ativo">Ativo</option>
+              <option value="manutencao">Manutenção</option>
+              <option value="inativo">Inativo</option>
+            </select>
+            <button type="submit" className="sm:col-span-3 bg-accent text-bg font-semibold text-sm rounded py-2">
+              Criar equipamento
+            </button>
+          </form>
+        </details>
+
         {(equipamentos ?? []).length === 0 ? (
           <div className="bg-panel-2 border border-line rounded-lg p-8 text-center">
             <p className="text-text-dim text-sm">
-              Nenhum equipamento cadastrado ainda. Cadastre PCs, notebooks e monitores
-              com patrimônio, usuário, IP e histórico de manutenção.
+              Nenhum equipamento cadastrado ainda. Use o formulário acima pra começar.
             </p>
           </div>
         ) : (

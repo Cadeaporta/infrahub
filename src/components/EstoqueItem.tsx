@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { movimentarItem } from "@/app/(app)/estoque/actions";
+import { movimentarItem, editarMinimo } from "@/app/(app)/estoque/actions";
 
 type Item = {
   id: string;
@@ -11,7 +11,7 @@ type Item = {
 };
 
 export default function EstoqueItem({ item }: { item: Item }) {
-  const [open, setOpen] = useState<"retirada" | "entrada" | null>(null);
+  const [open, setOpen] = useState<"retirada" | "entrada" | "minimo" | null>(null);
   const baixo = item.quantidade <= item.minimo;
 
   return (
@@ -19,7 +19,12 @@ export default function EstoqueItem({ item }: { item: Item }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium">{item.nome}</p>
-          <p className="text-xs text-text-dim mt-0.5">Mínimo: {item.minimo}</p>
+          <button
+            onClick={() => setOpen(open === "minimo" ? null : "minimo")}
+            className="text-xs text-text-dim mt-0.5 hover:text-accent underline decoration-dotted"
+          >
+            Mínimo: {item.minimo}
+          </button>
         </div>
         <span
           className={`font-mono text-2xl font-bold ${baixo ? "text-danger" : "text-accent"}`}
@@ -43,7 +48,33 @@ export default function EstoqueItem({ item }: { item: Item }) {
         </button>
       </div>
 
-      {open && (
+      {open === "minimo" && (
+        <form
+          action={async (fd) => {
+            await editarMinimo(fd);
+            setOpen(null);
+          }}
+          className="mt-3 flex gap-2 border-t border-line pt-3"
+        >
+          <input type="hidden" name="itemId" value={item.id} />
+          <input
+            name="minimo"
+            type="number"
+            min={0}
+            defaultValue={item.minimo}
+            required
+            className="flex-1 bg-bg border border-line rounded px-2 py-1.5 text-sm"
+          />
+          <button
+            type="submit"
+            className="text-xs font-mono font-semibold px-3 rounded bg-accent text-bg"
+          >
+            Salvar
+          </button>
+        </form>
+      )}
+
+      {(open === "retirada" || open === "entrada") && (
         <form
           action={async (fd) => {
             await movimentarItem(fd);
