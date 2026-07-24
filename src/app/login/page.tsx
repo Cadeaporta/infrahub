@@ -51,7 +51,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center gap-2 mb-2">
             <span className="w-2.5 h-2.5 rounded-full bg-accent status-pulse" />
             <span className="font-mono text-xs tracking-[0.3em] text-text-dim uppercase">
-              Multi360 · NOC
+              Vera Cruz · Braga IT
             </span>
           </div>
           <h1 className="font-mono text-3xl font-bold tracking-tight">InfraHub</h1>
@@ -104,7 +104,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-bg border border-line rounded px-3 py-2 text-sm focus:outline-none focus:border-accent"
-              placeholder="voce@multi360.com"
+              placeholder="voce@bragait.com"
             />
           </div>
 

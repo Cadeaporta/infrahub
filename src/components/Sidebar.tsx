@@ -36,7 +36,7 @@ export default function Sidebar() {
           <span className="w-2 h-2 rounded-full bg-accent status-pulse" />
           <span className="font-mono font-bold tracking-tight">InfraHub</span>
         </div>
-        <p className="text-[11px] text-text-dim mt-0.5 font-mono">Multi360 · NOC</p>
+        <p className="text-[11px] text-text-dim mt-0.5 font-mono">Vera Cruz · Braga IT</p>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
