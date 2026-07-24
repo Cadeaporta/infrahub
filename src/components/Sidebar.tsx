@@ -12,12 +12,14 @@ import {
   ShieldCheck,
   CalendarClock,
   Tv,
+  Server,
 } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/estoque", label: "Estoque", icon: Package },
   { href: "/equipamentos", label: "Equipamentos", icon: Monitor },
+  { href: "/servidores", label: "Servidores", icon: Server },
   { href: "/plantao", label: "Plantão", icon: CalendarClock },
   { href: "/avisos", label: "Avisos", icon: Megaphone },
   { href: "/admin", label: "Admin", icon: ShieldCheck },

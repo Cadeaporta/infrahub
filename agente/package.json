@@ -1,0 +1,14 @@
+{
+  "name": "infrahub-agente",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agente de monitoramento InfraHub - roda dentro da rede do hospital",
+  "main": "checar.js",
+  "scripts": {
+    "checar": "node checar.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.8",
+    "dotenv": "^16.4.5"
+  }
+}
