@@ -148,6 +148,63 @@
   .plantao-horario { color: var(--text-dim); font-size: 22px; margin-top: 16px; }
 
   .vazio { color: var(--text-dim); font-size: 18px; text-align: center; margin: auto; }
+
+  input, select {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+  }
+  select { font-family: 'JetBrains Mono', monospace; }
+
+  .linha-equipe { gap: 12px; }
+  .linha-equipe .nome { flex: 1; }
+  .linha-equipe input.nome-input {
+    flex: 1;
+    font-size: 20px;
+  }
+
+  .acoes {
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .linha-equipe:hover .acoes { opacity: 1; }
+
+  .btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.perigo:hover { border-color: #EF5A5A; color: #EF5A5A; }
+
+  .form-add {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  .form-add input { flex: 1; }
+
+  .plantao-editar {
+    margin-top: 20px;
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    max-width: 360px;
+  }
+  .plantao-editar input { flex: 1; text-align: center; }
 </style>
 </head>
 <body>
@@ -208,6 +265,7 @@
       supabase.from("plantoes").select("*").eq("data", hojeISO).maybeSingle(),
     ]);
 
+    // --- Equipe ---
     const equipeEl = document.getElementById("equipe");
     equipeEl.innerHTML = "";
     if (!equipe || equipe.length === 0) {
@@ -217,26 +275,86 @@
         const presente = !ehFimDeSemana && horaAtual >= m.entrada && horaAtual < m.entrada + 9;
         const linha = document.createElement("div");
         linha.className = "linha-equipe";
+
+        const opcoesEntrada = [7, 8, 9, 10]
+          .map((h) => `<option value="${h}" ${h === m.entrada ? "selected" : ""}>${h}:00 – ${h + 9}:00</option>`)
+          .join("");
+
         linha.innerHTML = `
-          <span class="nome">
-            <span class="bolinha ${presente ? "ativo" : ""}"></span>
-            ${m.nome}
-          </span>
-          <span class="horario">${m.entrada}:00 – ${m.entrada + 9}:00</span>
+          <span class="bolinha ${presente ? "ativo" : ""}"></span>
+          <input class="nome-input" value="${m.nome}" data-id="${m.id}" data-campo="nome" />
+          <select data-id="${m.id}" data-campo="entrada">${opcoesEntrada}</select>
+          <div class="acoes">
+            <button class="btn" data-acao="salvar-membro" data-id="${m.id}">Salvar</button>
+            <button class="btn perigo" data-acao="remover-membro" data-id="${m.id}">Remover</button>
+          </div>
         `;
         equipeEl.appendChild(linha);
       }
     }
 
+    // formulário de adicionar
+    const formAdd = document.createElement("div");
+    formAdd.className = "form-add";
+    formAdd.innerHTML = `
+      <input id="novo-nome" placeholder="Novo nome" />
+      <select id="novo-entrada">
+        <option value="7">7:00 – 16:00</option>
+        <option value="8" selected>8:00 – 17:00</option>
+        <option value="9">9:00 – 18:00</option>
+        <option value="10">10:00 – 19:00</option>
+      </select>
+      <button class="btn" id="btn-adicionar">+ Adicionar</button>
+    `;
+    equipeEl.appendChild(formAdd);
+
+    document.querySelectorAll('[data-acao="salvar-membro"]').forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const linha = btn.closest(".linha-equipe");
+        const nome = linha.querySelector('[data-campo="nome"]').value.trim();
+        const entrada = Number(linha.querySelector('[data-campo="entrada"]').value);
+        if (!nome) return;
+        await supabase.from("escala_equipe").update({ nome, entrada }).eq("id", id);
+        carregarDados();
+      });
+    });
+
+    document.querySelectorAll('[data-acao="remover-membro"]').forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        await supabase.from("escala_equipe").delete().eq("id", btn.dataset.id);
+        carregarDados();
+      });
+    });
+
+    document.getElementById("btn-adicionar").addEventListener("click", async () => {
+      const nome = document.getElementById("novo-nome").value.trim();
+      const entrada = Number(document.getElementById("novo-entrada").value);
+      if (!nome) return;
+      await supabase.from("escala_equipe").insert({ nome, entrada });
+      carregarDados();
+    });
+
+    // --- Plantão ---
     const plantaoEl = document.getElementById("plantao");
-    if (plantaoHoje) {
-      plantaoEl.innerHTML = `
-        <div class="plantao-nome">${plantaoHoje.nome}</div>
-        <div class="plantao-horario">${ehFimDeSemana ? "6h – 6h" : "19h – 7h"}</div>
-      `;
-    } else {
-      plantaoEl.innerHTML = '<p class="vazio">Ninguém escalado ainda</p>';
-    }
+    plantaoEl.innerHTML = `
+      <div class="plantao-nome">${plantaoHoje ? plantaoHoje.nome : "—"}</div>
+      <div class="plantao-horario">${ehFimDeSemana ? "6h – 6h" : "19h – 7h"}</div>
+      <div class="plantao-editar">
+        <input id="plantao-nome-input" placeholder="Nome do plantonista" value="${plantaoHoje ? plantaoHoje.nome : ""}" />
+        <button class="btn" id="btn-salvar-plantao">Salvar</button>
+      </div>
+    `;
+
+    document.getElementById("btn-salvar-plantao").addEventListener("click", async () => {
+      const nome = document.getElementById("plantao-nome-input").value.trim();
+      if (!nome) {
+        await supabase.from("plantoes").delete().eq("data", hojeISO);
+      } else {
+        await supabase.from("plantoes").upsert({ data: hojeISO, nome }, { onConflict: "data" });
+      }
+      carregarDados();
+    });
   }
 
   atualizarRelogio();
