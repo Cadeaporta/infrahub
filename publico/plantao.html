@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>InfraHub · Plantão</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0A0E17;
+    --panel: #161D30;
+    --line: #262F47;
+    --accent: #F2793A;
+    --accent-2: #3E7BF2;
+    --text: #EDF1F7;
+    --text-dim: #8792AB;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    padding: 48px;
+    min-height: 100vh;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .logo { display: flex; align-items: center; gap: 16px; }
+
+  .dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(242,121,58,0.5); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 8px rgba(242,121,58,0); }
+  }
+
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 40px;
+    margin: 0;
+  }
+
+  .sub { color: var(--text-dim); font-size: 14px; margin-top: 4px; }
+
+  .relogio {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .relogio .hora {
+    font-size: 48px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .relogio .data {
+    color: var(--text-dim);
+    font-size: 18px;
+    margin-top: 4px;
+    text-transform: capitalize;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 32px;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    margin: 0 0 24px 0;
+  }
+
+  .linha-equipe {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 22px;
+  }
+  .linha-equipe:last-child { border-bottom: none; }
+
+  .linha-equipe .nome { display: flex; align-items: center; gap: 12px; }
+
+  .bolinha {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .bolinha.ativo {
+    background: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .horario { font-family: 'JetBrains Mono', monospace; color: var(--text-dim); font-size: 18px; }
+
+  .plantao-central {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .plantao-nome {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 56px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .plantao-horario { color: var(--text-dim); font-size: 22px; margin-top: 16px; }
+
+  .vazio { color: var(--text-dim); font-size: 18px; text-align: center; margin: auto; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="dot"></span>
+    <div>
+      <h1>InfraHub</h1>
+      <p class="sub">Vera Cruz · Braga IT</p>
+    </div>
+  </div>
+  <div class="relogio">
+    <div class="hora" id="hora">--:--</div>
+    <div class="data" id="data"></div>
+  </div>
+</header>
+
+<div class="grid">
+  <div class="card">
+    <h2>Horário de trabalho</h2>
+    <div id="equipe"></div>
+  </div>
+
+  <div class="card">
+    <h2>Plantão de hoje</h2>
+    <div id="plantao" class="plantao-central"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  const SUPABASE_URL = "https://koiiqafjmlnsdkijnwmi.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_Uv8bl8Ont7pAQju9WrBJww_aoR2KTSp";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function atualizarRelogio() {
+    const agora = new Date();
+    document.getElementById("hora").textContent = agora.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    document.getElementById("data").textContent = agora.toLocaleDateString("pt-BR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+    });
+  }
+
+  async function carregarDados() {
+    const agora = new Date();
+    const hojeISO = agora.toISOString().slice(0, 10);
+    const horaAtual = agora.getHours() + agora.getMinutes() / 60;
+    const ehFimDeSemana = agora.getDay() === 0 || agora.getDay() === 6;
+
+    const [{ data: equipe }, { data: plantaoHoje }] = await Promise.all([
+      supabase.from("escala_equipe").select("*").order("entrada").order("nome"),
+      supabase.from("plantoes").select("*").eq("data", hojeISO).maybeSingle(),
+    ]);
+
+    const equipeEl = document.getElementById("equipe");
+    equipeEl.innerHTML = "";
+    if (!equipe || equipe.length === 0) {
+      equipeEl.innerHTML = '<p class="vazio">Ninguém cadastrado ainda.</p>';
+    } else {
+      for (const m of equipe) {
+        const presente = !ehFimDeSemana && horaAtual >= m.entrada && horaAtual < m.entrada + 9;
+        const linha = document.createElement("div");
+        linha.className = "linha-equipe";
+        linha.innerHTML = `
+          <span class="nome">
+            <span class="bolinha ${presente ? "ativo" : ""}"></span>
+            ${m.nome}
+          </span>
+          <span class="horario">${m.entrada}:00 – ${m.entrada + 9}:00</span>
+        `;
+        equipeEl.appendChild(linha);
+      }
+    }
+
+    const plantaoEl = document.getElementById("plantao");
+    if (plantaoHoje) {
+      plantaoEl.innerHTML = `
+        <div class="plantao-nome">${plantaoHoje.nome}</div>
+        <div class="plantao-horario">${ehFimDeSemana ? "6h – 6h" : "19h – 7h"}</div>
+      `;
+    } else {
+      plantaoEl.innerHTML = '<p class="vazio">Ninguém escalado ainda</p>';
+    }
+  }
+
+  atualizarRelogio();
+  carregarDados();
+  setInterval(atualizarRelogio, 1000);
+  setInterval(carregarDados, 30000);
+</script>
+
+</body>
+</html>
