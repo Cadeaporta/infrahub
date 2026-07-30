@@ -1,2 +1,4 @@
 node_modules
 .env
+qualitor-auth.json
+print.png

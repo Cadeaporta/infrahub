@@ -46,6 +46,53 @@ libero/confirmo a conta no banco.
 */5 * * * * cd /caminho/para/agente && node checar.js >> log.txt 2>&1
 ```
 
+## Print automático do Qualitor (opcional)
+
+Isso tira um print de uma parte do Qualitor de tempos em tempos e salva como
+imagem, pra usar na tela `infrahub-tv-plantao.html` sem precisar de login
+embutido em nenhum lugar.
+
+1. Instalar o navegador do Playwright (só na primeira vez):
+   ```
+   npx playwright install chromium
+   ```
+
+2. Preencher no `.env`:
+   ```
+   QUALITOR_URL=https://qualitor.suaempresa.com.br/dashboard
+   QUALITOR_SELECTOR=   (opcional, veja abaixo)
+   SAIDA_PRINT=         (opcional, por padrão salva print.png nessa pasta)
+   ```
+
+3. Logar uma vez (abre uma janela de verdade pra você digitar usuário/senha):
+   ```
+   node qualitor-login.js
+   ```
+   Loga normalmente, volta no terminal e aperta ENTER. Isso salva um arquivo
+   `qualitor-auth.json` — é a sessão logada, guarda esse arquivo com cuidado
+   (já tá no `.gitignore`, nunca sobe pro GitHub).
+
+4. Testar o print:
+   ```
+   node print-qualitor.js
+   ```
+   Sem `QUALITOR_SELECTOR` preenchido, ele tira print da página inteira.
+   Pra recortar só um card específico (tipo aquele "Minha equipe"), abra o
+   Qualitor no Chrome, clique com botão direito em cima do card → Inspecionar
+   → copia o seletor CSS do elemento (botão direito no HTML destacado →
+   Copy → Copy selector) e cola em `QUALITOR_SELECTOR`.
+
+5. **Colocar `print.png` na MESMA pasta do `infrahub-tv-plantao.html`** — é
+   assim que a tela acha o arquivo. No painel da TV, clica em "⚙ Arquivo" e
+   confirma que o nome bate (`print.png` por padrão).
+
+6. Agendar `node print-qualitor.js` pra rodar a cada 5-10 minutos (mesma
+   lógica do Agendador de Tarefas usada pro `checar.js`).
+
+A sessão salva pode expirar de tempos em tempos (depende de como o Qualitor
+configura o tempo de login) — se o print parar de atualizar, rode o
+`qualitor-login.js` de novo.
+
 ## O que NÃO fazer
 - Não commitar o `.env` em lugar nenhum (já tá no `.gitignore`).
 - Não rodar em máquina que desliga à noite — perde o monitoramento justamente

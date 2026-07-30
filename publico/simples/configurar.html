@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>InfraHub · Configurar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0A0E17;
+    --panel: #161D30;
+    --line: #262F47;
+    --accent: #F2793A;
+    --accent-2: #3E7BF2;
+    --text: #EDF1F7;
+    --text-dim: #8792AB;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    padding: 40px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    margin: 0 0 4px 0;
+  }
+  .sub { color: var(--text-dim); font-size: 14px; margin-bottom: 32px; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 640px;
+    margin-bottom: 24px;
+  }
+  .card h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    margin: 0 0 20px 0;
+  }
+  input, select {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+  }
+  .linha {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .linha:last-child { border-bottom: none; }
+  .linha input.nome { flex: 1; }
+  .btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.perigo:hover { border-color: #EF5A5A; color: #EF5A5A; }
+  .btn.primario {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    font-weight: 600;
+  }
+  .form-add {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .form-add input { flex: 1; }
+  .plantao-form { display: flex; gap: 10px; }
+  .plantao-form input { flex: 1; }
+  .vazio { color: var(--text-dim); font-size: 14px; }
+  a.link-tv {
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    text-decoration: none;
+  }
+  a.link-tv:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<h1>InfraHub · Configurar</h1>
+<p class="sub">
+  Isso salva só nesse navegador/computador (sem internet, sem servidor).
+  Abra <a class="link-tv" href="tv.html" target="_blank">tv.html</a> nessa mesma máquina pra ver o resultado.
+</p>
+
+<div class="card">
+  <h2>Plantão de hoje</h2>
+  <div class="plantao-form">
+    <input id="plantao-nome" placeholder="Nome do plantonista de hoje" />
+    <button class="btn primario" id="btn-salvar-plantao">Salvar</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Horário de trabalho (escala da equipe)</h2>
+  <div id="lista-equipe"></div>
+  <div class="form-add">
+    <input id="novo-nome" placeholder="Nome" />
+    <select id="novo-entrada">
+      <option value="7">7:00 – 16:00</option>
+      <option value="8" selected>8:00 – 17:00</option>
+      <option value="9">9:00 – 18:00</option>
+      <option value="10">10:00 – 19:00</option>
+    </select>
+    <button class="btn primario" id="btn-adicionar">+ Adicionar</button>
+  </div>
+</div>
+
+<script>
+  const CHAVE_EQUIPE = "infrahub_equipe";
+  const CHAVE_PLANTAO = "infrahub_plantao_hoje";
+
+  function pegarEquipe() {
+    try {
+      return JSON.parse(localStorage.getItem(CHAVE_EQUIPE)) || [];
+    } catch {
+      return [];
+    }
+  }
+  function salvarEquipe(lista) {
+    localStorage.setItem(CHAVE_EQUIPE, JSON.stringify(lista));
+  }
+
+  function renderizar() {
+    const lista = pegarEquipe();
+    const el = document.getElementById("lista-equipe");
+    el.innerHTML = "";
+    if (lista.length === 0) {
+      el.innerHTML = '<p class="vazio">Ninguém cadastrado ainda.</p>';
+      return;
+    }
+    lista.forEach((m, i) => {
+      const linha = document.createElement("div");
+      linha.className = "linha";
+      const opcoes = [7, 8, 9, 10]
+        .map((h) => `<option value="${h}" ${h === m.entrada ? "selected" : ""}>${h}:00 – ${h + 9}:00</option>`)
+        .join("");
+      linha.innerHTML = `
+        <input class="nome" value="${m.nome}" data-i="${i}" data-campo="nome" />
+        <select data-i="${i}" data-campo="entrada">${opcoes}</select>
+        <button class="btn perigo" data-remover="${i}">Remover</button>
+      `;
+      el.appendChild(linha);
+    });
+
+    el.querySelectorAll("[data-campo]").forEach((campo) => {
+      campo.addEventListener("change", () => {
+        const i = Number(campo.dataset.i);
+        const lista = pegarEquipe();
+        if (campo.dataset.campo === "nome") lista[i].nome = campo.value;
+        else lista[i].entrada = Number(campo.value);
+        salvarEquipe(lista);
+      });
+    });
+
+    el.querySelectorAll("[data-remover]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const i = Number(btn.dataset.remover);
+        const lista = pegarEquipe();
+        lista.splice(i, 1);
+        salvarEquipe(lista);
+        renderizar();
+      });
+    });
+  }
+
+  document.getElementById("btn-adicionar").addEventListener("click", () => {
+    const nome = document.getElementById("novo-nome").value.trim();
+    const entrada = Number(document.getElementById("novo-entrada").value);
+    if (!nome) return;
+    const lista = pegarEquipe();
+    lista.push({ nome, entrada });
+    salvarEquipe(lista);
+    document.getElementById("novo-nome").value = "";
+    renderizar();
+  });
+
+  document.getElementById("btn-salvar-plantao").addEventListener("click", () => {
+    const nome = document.getElementById("plantao-nome").value.trim();
+    localStorage.setItem(CHAVE_PLANTAO, nome);
+    alert("Plantão de hoje salvo: " + (nome || "(vazio)"));
+  });
+
+  document.getElementById("plantao-nome").value = localStorage.getItem(CHAVE_PLANTAO) || "";
+  renderizar();
+</script>
+
+</body>
+</html>

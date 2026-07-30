@@ -235,11 +235,16 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://koiiqafjmlnsdkijnwmi.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_Uv8bl8Ont7pAQju9WrBJww_aoR2KTSp";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let supabase = null;
+  try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (e) {
+    console.error("Falha ao iniciar cliente Supabase:", e);
+  }
 
   function atualizarRelogio() {
     const agora = new Date();
@@ -255,15 +260,35 @@
   }
 
   async function carregarDados() {
+    try {
+      await carregarDadosInterno();
+    } catch (e) {
+      document.getElementById("equipe").innerHTML =
+        '<p class="vazio" style="color:#EF5A5A;">Erro ao carregar: ' + (e.message || e) + '</p>';
+      document.getElementById("plantao").innerHTML =
+        '<p class="vazio" style="color:#EF5A5A;">Erro ao carregar: ' + (e.message || e) + '</p>';
+      console.error(e);
+    }
+  }
+
+  async function carregarDadosInterno() {
+    if (!supabase) {
+      throw new Error("Biblioteca do Supabase não carregou (sem internet ou CDN bloqueado)");
+    }
+
     const agora = new Date();
     const hojeISO = agora.toISOString().slice(0, 10);
     const horaAtual = agora.getHours() + agora.getMinutes() / 60;
     const ehFimDeSemana = agora.getDay() === 0 || agora.getDay() === 6;
 
-    const [{ data: equipe }, { data: plantaoHoje }] = await Promise.all([
-      supabase.from("escala_equipe").select("*").order("entrada").order("nome"),
-      supabase.from("plantoes").select("*").eq("data", hojeISO).maybeSingle(),
-    ]);
+    const [{ data: equipe, error: erroEquipe }, { data: plantaoHoje, error: erroPlantao }] =
+      await Promise.all([
+        supabase.from("escala_equipe").select("*").order("entrada").order("nome"),
+        supabase.from("plantoes").select("*").eq("data", hojeISO).maybeSingle(),
+      ]);
+
+    if (erroEquipe) throw erroEquipe;
+    if (erroPlantao) throw erroPlantao;
 
     // --- Equipe ---
     const equipeEl = document.getElementById("equipe");

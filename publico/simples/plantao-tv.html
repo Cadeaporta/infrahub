@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>InfraHub · Plantão</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0A0E17;
+    --panel: #161D30;
+    --line: #262F47;
+    --accent: #F2793A;
+    --accent-2: #3E7BF2;
+    --text: #EDF1F7;
+    --text-dim: #8792AB;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    padding: 48px;
+    min-height: 100vh;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .logo { display: flex; align-items: center; gap: 16px; }
+  .dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(242,121,58,0.5); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 8px rgba(242,121,58,0); }
+  }
+  h1 { font-family: 'JetBrains Mono', monospace; font-size: 40px; margin: 0; }
+  .sub { color: var(--text-dim); font-size: 14px; margin-top: 4px; }
+  .relogio { text-align: right; font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 20px; }
+  .relogio .hora {
+    font-size: 48px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .relogio .data { color: var(--text-dim); font-size: 18px; margin-top: 4px; text-transform: capitalize; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    padding: 32px; min-height: 420px; display: flex; flex-direction: column;
+  }
+  .card h2 {
+    font-family: 'JetBrains Mono', monospace; font-size: 18px; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--text-dim); margin: 0 0 24px 0;
+  }
+  .linha-equipe {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 22px;
+  }
+  .linha-equipe:last-child { border-bottom: none; }
+  .linha-equipe .nome { display: flex; align-items: center; gap: 12px; }
+  .bolinha { width: 10px; height: 10px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+  .bolinha.ativo { background: var(--accent); animation: pulse 2s ease-in-out infinite; }
+  .horario { font-family: 'JetBrains Mono', monospace; color: var(--text-dim); font-size: 18px; }
+  .plantao-central { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .plantao-nome {
+    font-family: 'JetBrains Mono', monospace; font-size: 56px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .plantao-horario { color: var(--text-dim); font-size: 22px; margin-top: 16px; }
+  .vazio { color: var(--text-dim); font-size: 18px; text-align: center; margin: auto; }
+
+  .btn-engrenagem {
+    background: var(--panel); border: 1px solid var(--line); color: var(--text-dim);
+    border-radius: 10px; width: 44px; height: 44px; font-size: 20px; cursor: pointer;
+  }
+  .btn-engrenagem:hover { border-color: var(--accent); color: var(--accent); }
+
+  .overlay {
+    display: none;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    align-items: center; justify-content: center; z-index: 50;
+  }
+  .overlay.aberto { display: flex; }
+  .painel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    padding: 32px; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto;
+  }
+  .painel h2 { margin-top: 0; }
+  .painel-secao { margin-bottom: 28px; }
+  .painel-secao h3 {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; text-transform: uppercase;
+    color: var(--text-dim); margin: 0 0 14px 0;
+  }
+  input, select {
+    background: var(--bg); border: 1px solid var(--line); color: var(--text);
+    border-radius: 8px; padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 15px;
+  }
+  .linha-config { display: flex; gap: 8px; align-items: center; padding: 8px 0; }
+  .linha-config input.nome { flex: 1; }
+  .btn { background: transparent; border: 1px solid var(--line); color: var(--text-dim); border-radius: 8px; padding: 7px 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.perigo:hover { border-color: #EF5A5A; color: #EF5A5A; }
+  .btn.primario { background: var(--accent); color: var(--bg); border: none; font-weight: 600; }
+  .form-add { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .form-add input { flex: 1; }
+  .plantao-form { display: flex; gap: 8px; }
+  .plantao-form input { flex: 1; }
+  .fechar { text-align: right; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="dot"></span>
+    <div>
+      <h1>InfraHub</h1>
+      <p class="sub">Vera Cruz · Braga IT</p>
+    </div>
+  </div>
+  <div class="relogio">
+    <button class="btn-engrenagem" id="btn-abrir-config" title="Configurar">⚙</button>
+    <div>
+      <div class="hora" id="hora">--:--</div>
+      <div class="data" id="data"></div>
+    </div>
+  </div>
+</header>
+
+<div class="grid">
+  <div class="card">
+    <h2>Horário de trabalho</h2>
+    <div id="equipe"></div>
+  </div>
+  <div class="card">
+    <h2>Plantão de hoje</h2>
+    <div id="plantao" class="plantao-central"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="painel">
+    <h2>Configurar</h2>
+
+    <div class="painel-secao">
+      <h3>Plantão de hoje</h3>
+      <div class="plantao-form">
+        <input id="plantao-nome" placeholder="Nome do plantonista" />
+        <button class="btn primario" id="btn-salvar-plantao">Salvar</button>
+      </div>
+    </div>
+
+    <div class="painel-secao">
+      <h3>Horário de trabalho (equipe)</h3>
+      <div id="lista-equipe"></div>
+      <div class="form-add">
+        <input id="novo-nome" placeholder="Nome" />
+        <select id="novo-entrada">
+          <option value="7">7:00 – 16:00</option>
+          <option value="8" selected>8:00 – 17:00</option>
+          <option value="9">9:00 – 18:00</option>
+          <option value="10">10:00 – 19:00</option>
+        </select>
+        <button class="btn primario" id="btn-adicionar">+ Adicionar</button>
+      </div>
+    </div>
+
+    <div class="fechar">
+      <button class="btn" id="btn-fechar-config">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const CHAVE_EQUIPE = "infrahub_equipe";
+  const CHAVE_PLANTAO = "infrahub_plantao_hoje";
+
+  function pegarEquipe() {
+    try { return JSON.parse(localStorage.getItem(CHAVE_EQUIPE)) || []; }
+    catch { return []; }
+  }
+  function salvarEquipe(lista) {
+    localStorage.setItem(CHAVE_EQUIPE, JSON.stringify(lista));
+  }
+
+  function atualizarRelogio() {
+    const agora = new Date();
+    document.getElementById("hora").textContent = agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    document.getElementById("data").textContent = agora.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+  }
+
+  function renderizarTela() {
+    const agora = new Date();
+    const horaAtual = agora.getHours() + agora.getMinutes() / 60;
+    const ehFimDeSemana = agora.getDay() === 0 || agora.getDay() === 6;
+    const equipe = pegarEquipe();
+
+    const equipeEl = document.getElementById("equipe");
+    equipeEl.innerHTML = "";
+    if (equipe.length === 0) {
+      equipeEl.innerHTML = '<p class="vazio">Ninguém cadastrado ainda. Clique na ⚙ pra configurar.</p>';
+    } else {
+      equipe.forEach((m) => {
+        const presente = !ehFimDeSemana && horaAtual >= m.entrada && horaAtual < m.entrada + 9;
+        const linha = document.createElement("div");
+        linha.className = "linha-equipe";
+        linha.innerHTML = `
+          <span class="nome"><span class="bolinha ${presente ? "ativo" : ""}"></span>${m.nome}</span>
+          <span class="horario">${m.entrada}:00 – ${m.entrada + 9}:00</span>
+        `;
+        equipeEl.appendChild(linha);
+      });
+    }
+
+    const nomePlantao = localStorage.getItem(CHAVE_PLANTAO) || "";
+    const plantaoEl = document.getElementById("plantao");
+    plantaoEl.innerHTML = nomePlantao
+      ? `<div class="plantao-nome">${nomePlantao}</div><div class="plantao-horario">${ehFimDeSemana ? "6h – 6h" : "19h – 7h"}</div>`
+      : '<p class="vazio">Ninguém escalado ainda. Clique na ⚙ pra configurar.</p>';
+  }
+
+  function renderizarConfig() {
+    const el = document.getElementById("lista-equipe");
+    const lista = pegarEquipe();
+    el.innerHTML = "";
+    if (lista.length === 0) {
+      el.innerHTML = '<p class="vazio" style="font-size:14px;">Ninguém cadastrado ainda.</p>';
+    } else {
+      lista.forEach((m, i) => {
+        const linha = document.createElement("div");
+        linha.className = "linha-config";
+        const opcoes = [7, 8, 9, 10]
+          .map((h) => `<option value="${h}" ${h === m.entrada ? "selected" : ""}>${h}:00 – ${h + 9}:00</option>`)
+          .join("");
+        linha.innerHTML = `
+          <input class="nome" value="${m.nome}" data-i="${i}" data-campo="nome" />
+          <select data-i="${i}" data-campo="entrada">${opcoes}</select>
+          <button class="btn perigo" data-remover="${i}">Remover</button>
+        `;
+        el.appendChild(linha);
+      });
+    }
+
+    el.querySelectorAll("[data-campo]").forEach((campo) => {
+      campo.addEventListener("change", () => {
+        const i = Number(campo.dataset.i);
+        const lista = pegarEquipe();
+        if (campo.dataset.campo === "nome") lista[i].nome = campo.value;
+        else lista[i].entrada = Number(campo.value);
+        salvarEquipe(lista);
+        renderizarTela();
+      });
+    });
+
+    el.querySelectorAll("[data-remover]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const i = Number(btn.dataset.remover);
+        const lista = pegarEquipe();
+        lista.splice(i, 1);
+        salvarEquipe(lista);
+        renderizarConfig();
+        renderizarTela();
+      });
+    });
+
+    document.getElementById("plantao-nome").value = localStorage.getItem(CHAVE_PLANTAO) || "";
+  }
+
+  document.getElementById("btn-adicionar").addEventListener("click", () => {
+    const nome = document.getElementById("novo-nome").value.trim();
+    const entrada = Number(document.getElementById("novo-entrada").value);
+    if (!nome) return;
+    const lista = pegarEquipe();
+    lista.push({ nome, entrada });
+    salvarEquipe(lista);
+    document.getElementById("novo-nome").value = "";
+    renderizarConfig();
+    renderizarTela();
+  });
+
+  document.getElementById("btn-salvar-plantao").addEventListener("click", () => {
+    const nome = document.getElementById("plantao-nome").value.trim();
+    localStorage.setItem(CHAVE_PLANTAO, nome);
+    renderizarTela();
+  });
+
+  document.getElementById("btn-abrir-config").addEventListener("click", () => {
+    renderizarConfig();
+    document.getElementById("overlay").classList.add("aberto");
+  });
+  document.getElementById("btn-fechar-config").addEventListener("click", () => {
+    document.getElementById("overlay").classList.remove("aberto");
+  });
+  document.getElementById("overlay").addEventListener("click", (e) => {
+    if (e.target.id === "overlay") document.getElementById("overlay").classList.remove("aberto");
+  });
+
+  atualizarRelogio();
+  renderizarTela();
+  setInterval(atualizarRelogio, 1000);
+  setInterval(renderizarTela, 5000);
+</script>
+
+</body>
+</html>
